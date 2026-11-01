@@ -29,6 +29,18 @@ A full-stack AI agent web application built with React, TypeScript, FastAPI, and
 | Containerization | Docker, Docker Compose |
 | Chat storage | Browser localStorage |
 
+## Backend Repository
+
+This frontend application connects to a separate AI Agent API
+built with Python, FastAPI, and Ollama.
+
+**Backend source code:**
+[Project 4 — AI Agent API](https://github.com/Derobm-code/project_05_ai_agent_api.git)
+
+The backend provides the `/chat` endpoint, processes user
+messages, executes AI agent tools, and returns responses
+with tool execution traces.
+
 ## Architecture
 
 ```text

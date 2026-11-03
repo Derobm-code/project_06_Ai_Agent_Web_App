@@ -172,6 +172,96 @@ cd frontend
 npm run build
 ```
 
+## Live AI Agent Web App
+
+**Try the application:** https://project-06-ai-agent-web-app-murex.vercel.app
+
+A full-stack AI agent web application built with React, TypeScript, Vite, Python FastAPI, and GroqCloud.
+
+### Features
+
+- Interactive AI chat interface
+- Markdown and mathematical expression rendering
+- Expandable tool execution traces
+- Multiple chat sessions
+- Local browser storage for chat history
+- Loading indicators and retry functionality
+- Responsive interface
+- Hosted AI inference through Groq
+- Knowledge-base retrieval through the backend API
+
+### Technology Stack
+
+**Frontend:** React, TypeScript, Vite, React Markdown, KaTeX
+
+**Backend:** Python, FastAPI, Pydantic
+
+**AI:** GroqCloud with tool calling
+
+**Retrieval:** TF-IDF for cloud knowledge-base search
+
+**Deployment:** Vercel
+
+### Architecture
+
+```text
+User
+  |
+  v
+React + TypeScript (Vercel)
+  |
+  | HTTPS POST /chat
+  v
+FastAPI (Vercel)
+  |
+  v
+Groq AI Agent
+  |
+  +-- Calculation tools
+  +-- Date/time tool
+  +-- TF-IDF knowledge-base search
+  |
+  v
+Answer + execution trace
+  |
+  v
+React chat interface
+```
+
+### Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Configure the backend URL in `.env.local`:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The backend must be running at the configured address.
+
+For production, set `VITE_API_URL` in the frontend Vercel project's environment variables to the deployed FastAPI URL.
+
+### Backend Repository
+
+[AI Agent API](https://github.com/Derobm-code/project_04_ai_agent_api)
+
+### Deployment
+
+The frontend and backend are deployed independently on Vercel.
+
+The frontend communicates with the backend over HTTPS. API keys remain on the backend and are never exposed through frontend environment variables.
+
 The compiled application is generated in the `dist/` directory.
 
 ## Future Improvements

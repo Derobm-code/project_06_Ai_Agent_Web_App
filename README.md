@@ -1,282 +1,135 @@
-# AI Agent Web Application
+# AI Agent Web App — React, TypeScript & Vite
 
-A full-stack AI agent web application built with React, TypeScript, FastAPI, and Ollama. The application provides a modern chat interface for interacting with a locally hosted AI agent capable of answering questions and executing tools.
+A full-stack AI agent chat interface built with React, TypeScript, and Vite. The frontend communicates with a separately deployed FastAPI backend to provide AI responses, Python tool execution, and knowledge-base retrieval with a visible execution trace.
+
+**Live demo:** https://project-06-ai-agent-web-app-murex.vercel.app  
+**Backend API:** https://project-05-ai-agent-api.vercel.app  
+**API documentation:** https://project-05-ai-agent-api.vercel.app/docs
 
 ## Features
 
-- **AI-powered conversations:** Chat with a local AI model through Ollama.
-- **Tool execution:** Use agent tools for tasks such as mathematical calculations.
-- **Expandable execution traces:** Inspect tool names, arguments, and results.
-- **Markdown support:** Display formatted AI responses.
-- **Mathematical expressions:** Render LaTeX using KaTeX.
-- **Multiple conversations:** Create and switch between chat sessions.
-- **Persistent chat history:** Save conversations in browser localStorage.
-- **Loading indicators:** Display feedback while the AI processes requests.
-- **Error handling:** Show connection errors and allow users to retry messages.
-- **Automatic scrolling:** Keep the latest conversation messages visible.
+- **Interactive AI chat:** Send questions to a deployed agent and display its responses.
+- **Tool execution visibility:** Inspect the steps, arguments, and results returned by the backend.
+- **Math and utility tools:** Demonstrates tool-assisted calculations and other structured actions.
+- **Knowledge-base questions:** The agent can call `search_knowledge_base` to retrieve relevant document chunks.
+- **Cloud-hosted AI:** The backend uses Groq-hosted inference; visitors do not need Ollama or Docker.
+- **Request feedback:** Displays errors when the API is unavailable or rate-limited.
+- **Public deployment:** Frontend hosted on Vercel, with the backend deployed separately.
 
-## Technology Stack
+## Tech stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | Frontend | React, TypeScript, Vite |
-| Styling | CSS |
-| Backend | Python, FastAPI |
-| AI inference | Ollama |
-| AI model | Qwen3 1.7B |
-| Markdown rendering | react-markdown |
-| Mathematical formatting | remark-math, rehype-katex, KaTeX |
-| Containerization | Docker, Docker Compose |
-| Chat storage | Browser localStorage |
-
-## Backend Repository
-
-This frontend application connects to a separate AI Agent API
-built with Python, FastAPI, and Ollama.
-
-**Backend source code:**
-[Project 4 — AI Agent API](https://github.com/Derobm-code/project_05_ai_agent_api.git)
-
-The backend provides the `/chat` endpoint, processes user
-messages, executes AI agent tools, and returns responses
-with tool execution traces.
+| Hosting | Vercel |
+| API | FastAPI (separate deployment) |
+| Hosted model | Groq |
+| Agent capabilities | Python function tools and knowledge-base retrieval |
+| API quota protection | Upstash Redis rate limiting on the backend |
 
 ## Architecture
 
 ```text
-React + TypeScript Frontend
+Browser
+  |
+  v
+React + TypeScript UI (Vercel)
+  |
+  | POST {VITE_API_URL}/chat
+  v
+FastAPI API (Vercel)
+  |
+  +--> Upstash Redis rate-limit check
+  |
+  +--> Groq AI agent
           |
-          | HTTP POST /chat
-          v
-FastAPI AI Agent Backend
-          |
-          v
-AI Agent + Python Tools
-          |
-          v
-Local Ollama Model (Qwen3 1.7B)
-          |
-          v
-Answer + Tool Execution Trace
-          |
-          v
-React Chat Interface
+          +--> Python tools
+          +--> Cloud TF-IDF knowledge-base search
+  |
+  v
+JSON: answer + trace
+  |
+  v
+Chat response + expandable tool execution
 ```
 
-## Project Structure
+The frontend does **not** call Groq directly. The Groq API key and Upstash token remain on the backend.
+
+## Run locally
+
+Prerequisites: Node.js and npm, plus a running backend API or access to the deployed backend.
+
+1. Clone this repository and open the `frontend` directory.
+2. Install dependencies:
+
+   ```powershell
+   npm install
+   ```
+
+3. Create `frontend/.env.local`:
+
+   ```dotenv
+   VITE_API_URL=http://127.0.0.1:8000
+   ```
+
+   To use the public backend instead:
+
+   ```dotenv
+   VITE_API_URL=https://project-05-ai-agent-api.vercel.app
+   ```
+
+4. Start the development server:
+
+   ```powershell
+   npm run dev
+   ```
+
+5. Open the local URL shown by Vite (typically `http://localhost:5173`).
+
+**Important:** `VITE_API_URL` must include `https://` when pointing to the deployed backend. Vite variables beginning with `VITE_` are exposed to the browser, so never put secrets in them.
+
+## Example interactions
+
+### Tool-assisted calculation
+
+Prompt:
 
 ```text
-project_06_ai_agent_web_app/
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── App.tsx
-│   │   ├── App.css
-│   │   └── main.tsx
-│   ├── package.json
-│   └── ...
-└── README.md
+Calculate 15% of 240
 ```
 
-The application connects to a separate FastAPI backend developed in Project 4.
+Expected result: `36`, with a `calculate_percentage` tool execution in the trace.
 
-## Prerequisites
+### Knowledge-base retrieval
 
-- Node.js compatible with the installed Vite version
-- npm
-- Docker Desktop
-- Ollama
-- Qwen3 1.7B model
-- Running FastAPI AI Agent backend (Project 4)
-
-## Getting Started
-
-### 1. Start Ollama
-
-Make sure Ollama is running and the model is installed:
-
-```bash
-ollama pull qwen3:1.7b
-```
-
-### 2. Start the backend
-
-Navigate to the separate Project 4 backend directory:
-
-```bash
-cd project_05_ai_agent_api
-docker compose up -d
-```
-
-The FastAPI backend should be available at:
-
-`http://127.0.0.1:8000`
-
-API documentation:
-
-`http://127.0.0.1:8000/docs`
-
-### 3. Start the frontend
-
-Navigate to the frontend directory:
-
-```bash
-cd project_06_ai_agent_web_app/frontend
-npm install
-npm run dev
-```
-
-Open the local address displayed by Vite, typically:
-
-`http://localhost:5173`
-
-## API Integration
-
-The frontend communicates with the backend using:
-
-**POST** `/chat`
-
-Example request:
-
-```json
-{
-  "message": "Calculate 15% of 240"
-}
-```
-
-Example response:
-
-```json
-{
-  "answer": "The result is 36.",
-  "trace": [
-    {
-      "step": 1,
-      "tool": "calculate_percentage",
-      "arguments": {
-        "percentage": 15,
-        "value": 240
-      },
-      "result": 36
-    }
-  ]
-}
-```
-
-## Production Build
-
-To build the frontend:
-
-```bash
-cd frontend
-npm run build
-```
-
-## Live AI Agent Web App
-
-**Try the application:** https://project-06-ai-agent-web-app-murex.vercel.app
-
-A full-stack AI agent web application built with React, TypeScript, Vite, Python FastAPI, and GroqCloud.
-
-### Features
-
-- Interactive AI chat interface
-- Markdown and mathematical expression rendering
-- Expandable tool execution traces
-- Multiple chat sessions
-- Local browser storage for chat history
-- Loading indicators and retry functionality
-- Responsive interface
-- Hosted AI inference through Groq
-- Knowledge-base retrieval through the backend API
-
-### Technology Stack
-
-**Frontend:** React, TypeScript, Vite, React Markdown, KaTeX
-
-**Backend:** Python, FastAPI, Pydantic
-
-**AI:** GroqCloud with tool calling
-
-**Retrieval:** TF-IDF for cloud knowledge-base search
-
-**Deployment:** Vercel
-
-### Architecture
+Prompt:
 
 ```text
-User
-  |
-  v
-React + TypeScript (Vercel)
-  |
-  | HTTPS POST /chat
-  v
-FastAPI (Vercel)
-  |
-  v
-Groq AI Agent
-  |
-  +-- Calculation tools
-  +-- Date/time tool
-  +-- TF-IDF knowledge-base search
-  |
-  v
-Answer + execution trace
-  |
-  v
-React chat interface
+Search my knowledge base for Python and explain its main features.
 ```
 
-### Local Development
+The agent can call `search_knowledge_base` and use retrieved text to formulate its answer. Open the tool execution section to inspect the trace.
 
-Install dependencies:
+## Deployment
 
-```bash
-npm install
-```
+1. Import the frontend repository into Vercel.
+2. Set the project root directory to `frontend` if the repository contains a separate frontend subfolder.
+3. Configure the environment variable:
 
-Configure the backend URL in `.env.local`:
+   ```dotenv
+   VITE_API_URL=https://project-05-ai-agent-api.vercel.app
+   ```
 
-```env
-VITE_API_URL=http://127.0.0.1:8000
-```
+4. Build and deploy the Vite application.
+5. Ensure the backend's CORS configuration permits the deployed frontend origin.
+6. Test a calculation, a knowledge-base question, and the API rate-limit response.
 
-Start the development server:
+## Error handling and limits
 
-```bash
-npm run dev
-```
+The public backend uses a Redis-backed IP rate limit to protect hosted inference capacity. Under the current configuration, exceeding 10 requests within an hourly window can return HTTP 429. Other API errors may be displayed in the interface. Limits and provider availability can change.
 
-The backend must be running at the configured address.
+## Related backend
 
-For production, set `VITE_API_URL` in the frontend Vercel project's environment variables to the deployed FastAPI URL.
+**FastAPI AI Agent API:** https://project-05-ai-agent-api.vercel.app/docs
 
-### Backend Repository
-
-[AI Agent API](https://github.com/Derobm-code/project_04_ai_agent_api)
-
-### Deployment
-
-The frontend and backend are deployed independently on Vercel.
-
-The frontend communicates with the backend over HTTPS. API keys remain on the backend and are never exposed through frontend environment variables.
-
-The compiled application is generated in the `dist/` directory.
-
-## Future Improvements
-
-- Streaming AI responses
-- GPU acceleration and model performance optimization
-- Conversation deletion and renaming
-- Authentication and user accounts
-- Database-backed chat history
-- Deployment with configurable API URLs
-
-## Project Status
-
-Core features implemented and production frontend build verified.
-
-## Author
-
-Derobm-code
+The backend contains the agent logic, tool definitions, RAG implementation, API validation, and request-rate limiting.
